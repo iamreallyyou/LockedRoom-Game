@@ -9,7 +9,7 @@ You wake up in a dark room — can you find a way out?
 3. Type your choices and press Enter
 
 ## Features
-- 2 endings (Good & Bad)
+- Multiple endings (Good & Bad)
 - Simple story-driven gameplay
 - Built with pure Python (no libraries needed)
 
