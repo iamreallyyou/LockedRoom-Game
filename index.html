@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔒 Locked Room Game</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  #game-container {
+    width: 100%;
+    max-width: 650px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 0 40px rgba(0,255,180,0.05);
+  }
+
+  #title {
+    text-align: center;
+    color: #00ffb4;
+    font-size: 1.4em;
+    letter-spacing: 4px;
+    margin-bottom: 6px;
+  }
+
+  #subtitle {
+    text-align: center;
+    color: #555;
+    font-size: 0.8em;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+  }
+
+  #status-bar {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  #location { color: #00ffb4; }
+  #inv { color: #aaa; }
+
+  #story-box {
+    background: #0d0d0d;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 140px;
+    margin-bottom: 20px;
+    font-size: 0.92em;
+    line-height: 1.8;
+    color: #ddd;
+    white-space: pre-wrap;
+  }
+
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+
+  .choice-btn {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #ccc;
+    padding: 12px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.88em;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+  }
+
+  .choice-btn:hover {
+    background: #1e2e28;
+    border-color: #00ffb4;
+    color: #00ffb4;
+  }
+
+  .choice-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  #ending-box {
+    display: none;
+    text-align: center;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 1em;
+    line-height: 1.8;
+  }
+
+  .ending-good { background: #0d2e1a; border: 1px solid #00ffb4; color: #00ffb4; }
+  .ending-bad { background: #2e0d0d; border: 1px solid #ff4444; color: #ff4444; }
+  .ending-secret { background: #1a1a2e; border: 1px solid #8888ff; color: #8888ff; }
+  .ending-true { background: #2e2a0d; border: 1px solid #ffd700; color: #ffd700; }
+
+  #restart-btn {
+    display: none;
+    margin: 16px auto 0;
+    background: transparent;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #888;
+    padding: 10px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  #restart-btn:hover { border-color: #00ffb4; color: #00ffb4; }
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div id="title">🔒 LOCKED ROOM</div>
+  <div id="subtitle">A MYSTERY PUZZLE GAME</div>
+
+  <div id="status-bar">
+    <span id="location">📍 ???</span>
+    <span id="inv">🎒 empty</span>
+  </div>
+
+  <div id="story-box"></div>
+  <div class="choices" id="choices"></div>
+  <div id="ending-box"></div>
+  <button id="restart-btn" onclick="restartGame()">↺ Play Again</button>
+</div>
+
+<script>
+  let inventory = [];
+
+  function updateStatus(room) {
+    document.getElementById('location').textContent = '📍 ' + room;
+    document.getElementById('inv').textContent =
+      inventory.length ? '🎒 ' + inventory.join(', ') : '🎒 empty';
+  }
+
+  function showStory(text) {
+    document.getElementById('story-box').textContent = text;
+  }
+
+  function showChoices(choices) {
+    const box = document.getElementById('choices');
+    box.innerHTML = '';
+    choices.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = c.label;
+      btn.onclick = c.action;
+      box.appendChild(btn);
+    });
+  }
+
+  function showEnding(type, text) {
+    document.getElementById('choices').innerHTML = '';
+    document.getElementById('story-box').textContent = '';
+    const box = document.getElementById('ending-box');
+    box.style.display = 'block';
+    box.className = 'ending-box ending-' + type;
+    box.textContent = text;
+    document.getElementById('restart-btn').style.display = 'block';
+  }
+
+  function restartGame() {
+    inventory = [];
+    document.getElementById('ending-box').style.display = 'none';
+    document.getElementById('restart-btn').style.display = 'none';
+    startGame();
+  }
+
+  // ==============================
+  // ROOM 1: DARK ROOM
+  // ==============================
+  function room1() {
+    updateStatus('Dark Room');
+    showStory(
+      'You wake up on a cold floor.\n' +
+      'It\'s pitch black. Your hands are shaking.\n' +
+      'You feel something in your pocket...'
+    );
+    showChoices([
+      { label: '1: Check your pocket', action: room1b },
+      { label: '2: Crawl around blindly', action: () =>
+        showEnding('bad', '☠️ BAD ENDING\n\nYou crawl into a wall. Hard.\nYou pass out again.') }
+    ]);
+  }
+
+  function room1b() {
+    inventory.push('LIGHTER');
+    updateStatus('Dark Room');
+    showStory(
+      'You pull out a LIGHTER from your pocket.\n\n' +
+      'The flame reveals the room.\n' +
+      'You see: a VENT on the wall, a DOOR with a keypad, and a DESK.'
+    );
+    showChoices([
+      { label: '1: Inspect the vent', action: room1c },
+      { label: '2: Try the keypad', action: room1c },
+      { label: '3: Search the desk', action: room1c }
+    ]);
+  }
+
+  function room1c() {
+    if (!inventory.includes('SCREWDRIVER')) {
+      inventory.push('SCREWDRIVER');
+      inventory.push('NOTE: code is where knowledge lives');
+    }
+    updateStatus('Dark Room');
+    showStory(
+      'You search the desk thoroughly.\n\n' +
+      'You find a SCREWDRIVER and a torn NOTE.\n' +
+      'The note reads: "The code is where knowledge lives."'
+    );
+    showChoices([
+      { label: '1: Use screwdriver on vent', action: () => {
+        showStory('You unscrew the vent and crawl through a dark tunnel...\n\nYou emerge into a dimly lit room.');
+        setTimeout(room2, 1200);
+      }},
+      { label: '2: Try keypad (no code yet)', action: () =>
+        showEnding('bad', '☠️ BAD ENDING\n\nYou don\'t have the code yet.\nThe door stays locked forever.') }
+    ]);
+  }
+
+  // ==============================
+  // ROOM 2: THE LAB
+  // ==============================
+  function room2() {
+    updateStatus('The Lab');
+    showStory(
+      'The room smells like chemicals.\n\n' +
+      'There are 3 tables: RED, BLUE, GREEN.\n' +
+      'On the wall: a locked CABINET and a strange MACHINE.'
+    );
+    showChoices([
+      { label: '1: Examine red table', action: () => {
+        showStory('Broken glass and burnt equipment. Nothing useful here.');
+        setTimeout(room2b, 800);
+      }},
+      { label: '2: Examine blue table', action: () => {
+        if (!inventory.includes('BLUE VIAL')) inventory.push('BLUE VIAL');
+        showStory('You find a BLUE VIAL with glowing liquid.\nCould be useful for something...');
+        updateStatus('The Lab');
+        setTimeout(room2b, 800);
+      }},
+      { label: '3: Examine green table', action: () => {
+        if (!inventory.includes('LAB NOTEBOOK')) inventory.push('LAB NOTEBOOK');
+        showStory('A notebook! It says:\n"Mix blue liquid + heat = unlock"');
+        updateStatus('The Lab');
+        setTimeout(room2b, 800);
+      }},
+      { label: '4: Try the cabinet', action: () => {
+        showStory('The cabinet is sealed with a chemical lock.\nYou need to figure out how to open it.');
+        setTimeout(room2b, 800);
+      }}
+    ]);
+  }
+
+  function room2b() {
+    if (!inventory.includes('BLUE VIAL')) inventory.push('BLUE VIAL');
+    if (!inventory.includes('LAB NOTEBOOK')) inventory.push('LAB NOTEBOOK');
+    updateStatus('The Lab');
+    showStory(
+      'The machine has a slot for a vial and a heat button.\n\n' +
+      'Your notebook hint: "Mix blue + heat = unlock"'
+    );
+    showChoices([
+      { label: '1: Insert blue vial and press heat', action: room2c },
+      { label: '2: Leave the machine alone', action: () =>
+        showEnding('bad', '☠️ BAD ENDING\n\nYou ignore the machine.\nNo way forward. You\'re stuck.') }
+    ]);
+  }
+
+  function room2c() {
+    inventory.push('KEY CARD');
+    inventory.push('BUILDING MAP');
+    updateStatus('The Lab');
+    showStory(
+      'The machine hisses. Steam rises.\nThe cabinet UNLOCKS with a loud CLICK.\n\n' +
+      'Inside: a KEY CARD and a MAP of the building.\n\n' +
+      'The map shows a LIBRARY next door.\nThe key card can open it.'
+    );
+    showChoices([
+      { label: '→ Use key card to enter Library', action: () => {
+        showStory('You swipe the key card.\nA door slides open revealing a library...');
+        setTimeout(room3, 1000);
+      }}
+    ]);
+  }
+
+  // ==============================
+  // ROOM 3: THE LIBRARY
+  // ==============================
+  function room3() {
+    updateStatus('The Library');
+    showStory(
+      'Rows of dusty books surround you.\n\n' +
+      'You remember the note: "The code is where knowledge lives."\n\n' +
+      'Shelves are labeled: SCIENCE, HISTORY, MYSTERY'
+    );
+    showChoices([
+      { label: '1: Search SCIENCE shelf', action: () => {
+        showStory('Science textbooks... equations... nothing hidden.\nMaybe try another shelf.');
+        setTimeout(room3b, 800);
+      }},
+      { label: '2: Search HISTORY shelf', action: () => {
+        inventory.push('OLD PHOTOGRAPH');
+        updateStatus('The Library');
+        showStory('History books... you find an OLD PHOTOGRAPH.\nSomeone\'s face is scratched out.\nNo code here, but keep the photo.');
+        setTimeout(room3b, 800);
+      }},
+      { label: '3: Search MYSTERY shelf', action: () => {
+        inventory.push('CODE: 4891');
+        updateStatus('The Library');
+        showStory('A mystery novel falls open.\nInside the cover: "4891"\n\nThat must be the keypad code!');
+        setTimeout(room3c, 800);
+      }}
+    ]);
+  }
+
+  function room3b() {
+    updateStatus('The Library');
+    showStory('You need to find the code.\nThe note said "where knowledge lives"...\nTry the MYSTERY shelf.');
+    showChoices([
+      { label: '1: Search MYSTERY shelf', action: () => {
+        inventory.push('CODE: 4891');
+        updateStatus('The Library');
+        showStory('A mystery novel falls open.\nInside: "4891"\n\nThat\'s the code!');
+        setTimeout(room3c, 800);
+      }},
+      { label: '2: Give up', action: () =>
+        showEnding('bad', '☠️ BAD ENDING\n\nYou sit on the library floor and give up.\nSomeone finds you there three days later.') }
+    ]);
+  }
+
+  function room3c() {
+    updateStatus('The Library');
+    showStory(
+      'You have the code: 4891 ✓\n\n' +
+      'But wait — there\'s a LOCKED DRAWER under the main desk.\n' +
+      'It has a keyhole shaped like... a photograph?'
+    );
+    showChoices([
+      { label: '1: Try to open the drawer', action: () => {
+        if (inventory.includes('OLD PHOTOGRAPH')) {
+          inventory.push('SECRET BADGE');
+          updateStatus('The Library');
+          showStory(
+            'You slide the photograph in. *CLICK*\n\n' +
+            'Inside: a SECRET BADGE with your name on it.\n\n' +
+            'How does someone here KNOW YOUR NAME? 😱'
+          );
+          setTimeout(room4, 1200);
+        } else {
+          showStory('The drawer won\'t open.\nMaybe you need something from the history shelf...');
+          setTimeout(room3, 800);
+        }
+      }},
+      { label: '2: Head straight to the exit', action: () => {
+        showStory('You head toward the exit hall...');
+        setTimeout(room4, 1000);
+      }}
+    ]);
+  }
+
+  // ==============================
+  // ROOM 4: EXIT HALL
+  // ==============================
+  function room4() {
+    updateStatus('Exit Hall');
+    showStory(
+      'A long corridor. At the end: THE EXIT DOOR.\n\n' +
+      'Next to it: a keypad. Same system as Room 1.\n' +
+      'A SECURITY CAMERA watches your every move.'
+    );
+    showChoices([
+      { label: '1: Enter code on keypad', action: room4_code },
+      { label: '2: Smash the security camera', action: () =>
+        showEnding('bad', '☠️ BAD ENDING\n\nYou smash the camera.\nAn alarm blares.\nGuards arrive in 30 seconds.\nGame over.') },
+      { label: '3: Look for another way out', action: room4_window }
+    ]);
+  }
+
+  function room4_window() {
+    if (inventory.includes('SECRET BADGE')) {
+      showEnding('true',
+        '🏆 TRUE ENDING\n\n' +
+        'You find a side window.\n' +
+        'Your secret badge has a chip — it unlocks the latch!\n\n' +
+        'You slip out undetected.\n' +
+        'Whoever built this place... they didn\'t expect you to find the badge.\n\n' +
+        'You\'re free. And you know their secret.'
+      );
+    } else {
+      showStory('You find a small window. It\'s sealed shut.\nNo way through without a special tool.');
+      setTimeout(room4, 800);
+    }
+  }
+
+  function room4_code() {
+    if (!inventory.includes('CODE: 4891')) {
+      showEnding('bad', '☠️ BAD ENDING\n\nYou don\'t remember the code.\nYou guess wrong too many times.\nThe system locks down permanently.');
+      return;
+    }
+    if (inventory.includes('SECRET BADGE')) {
+      showEnding('secret',
+        '✨ SECRET ENDING\n\n' +
+        'You type: 4-8-9-1\n*BEEP* GREEN LIGHT\n\n' +
+        'As you step into the sunlight, you stare at the badge.\n' +
+        'Your name. Your photo. But you\'ve never been here before.\n\n' +
+        'You\'re free... but the mystery is just beginning.'
+      );
+    } else {
+      showEnding('good',
+        '🎉 GOOD ENDING\n\n' +
+        'You type: 4-8-9-1\n*BEEP* GREEN LIGHT\n\n' +
+        'The door swings open.\n' +
+        'Sunlight. Fresh air. Freedom.\n\n' +
+        'You escaped. But you still don\'t know who locked you in.'
+      );
+    }
+  }
+
+  // ==============================
+  // START
+  // ==============================
+  function startGame() {
+    updateStatus('???');
+    showStory(
+      'Someone locked you in.\nYou don\'t know why.\nYou don\'t know where you are.\n\n' +
+      'Think carefully. Collect clues.\nThere are 4 endings to discover.\n\n' +
+      '[TIP: Explore everything before moving on]'
+    );
+    showChoices([
+      { label: '▶ Begin', action: room1 }
+    ]);
+  }
+
+  startGame();
+</script>
+</body>
+</html>
