@@ -1,4 +1,4 @@
-# Locked Room Game
+# 🔒 Locked Room Game
 
 A text-based choice game built with Python.  
 You wake up in a dark room — can you find a way out?
