@@ -1,254 +1,347 @@
-# ==============================
-# 🔒 LOCKED ROOM GAME 🔒
-# A mystery puzzle adventure
-# ==============================
+# เกม Locked Room - เขียนโดย [ชื่อคุณ]
+# เกมสืบสวนหาทางออกจากห้องลึกลับ
 
-inventory = []
+inventory = []  # กระเป๋าของผู้เล่น
 
-def show_status(room):
-    print("\n" + "=" * 40)
-    print(f"📍 Location: {room}")
+# --- แสดงสถานะผู้เล่น ---
+def show_status(location):
+    print("\n" + "-" * 35)
+    print(f"📍 ตำแหน่ง: {location}")
     if inventory:
-        print(f"🎒 Inventory: {', '.join(inventory)}")
+        print(f"🎒 ของในกระเป๋า: {', '.join(inventory)}")
     else:
-        print("🎒 Inventory: (empty)")
-    print("=" * 40)
+        print("🎒 กระเป๋า: ว่างเปล่า")
+    print("-" * 35)
 
-def ask(prompt, valid_choices):
+# ==============================
+# ห้องที่ 1: ห้องมืด
+# ==============================
+def room1():
+    show_status("ห้องมืด")
+    print("\nคุณตื่นขึ้นมาบนพื้นเย็น...")
+    print("มืดสนิท หัวใจเต้นแรง")
+    print("คุณรู้สึกว่ามีบางอย่างในกระเป๋า")
+
+    choice = input("\n1: คลำหาของในกระเป๋า\n2: คลานหาทางในความมืด\nเลือก: ")
+
+    if choice == "2":
+        print("\nคุณชนกำแพงหัวโขก...")
+        print("หมดสติอีกครั้ง")
+        ending_bad()
+        return
+
+    print("\nคุณเจอ ไฟแช็ก!")
+    inventory.append("ไฟแช็ก")
+
+    input("\n[กด Enter เพื่อดูห้อง]")
+
+    show_status("ห้องมืด")
+    print("\nแสงไฟแช็กส่องให้เห็นห้องทั้งหมด")
+    print("คุณเห็น: ช่องระบายอากาศ, ประตูที่มีคีย์แพด, และโต๊ะตัวหนึ่ง")
+
+    # วนให้ค้นจนกว่าจะออกได้
+    has_screwdriver = False
+
     while True:
-        choice = input(prompt)
-        if choice in valid_choices:
-            return choice
-        print("❌ Invalid choice. Try again.")
+        show_status("ห้องมืด")
+        print("\nจะไปที่ไหน?")
+        choice2 = input("1: ค้นช่องระบายอากาศ\n2: ลองเปิดประตู\n3: ค้นโต๊ะ\nเลือก: ")
 
-# ==============================
-# ROOM 1: DARK ROOM
-# ==============================
-def room_dark():
-    show_status("Dark Room")
-    print("\nYou wake up on a cold floor.")
-    print("It's pitch black. Your hands are shaking.")
-    print("You feel something in your pocket...")
+        if choice2 == "1":
+            if has_screwdriver:
+                print("\nคุณใช้ไขควงถอดสกรูออกทีละตัว...")
+                print("ช่องเปิดออก! คุณคลานเข้าไปในท่อมืด...")
+                print("\nท้ายท่อมีแสงสว่าง...")
+                input("[กด Enter เพื่อไปต่อ]")
+                room2()  # ไปห้องถัดไป
+                return
+            else:
+                print("\nช่องระบายอากาศมีสกรูล็อคอยู่ 4 ตัว")
+                print("ต้องหาอะไรมาถอดสกรูก่อน")
 
-    choice = ask("\n1: Check your pocket\n2: Crawl around blindly\nChoose: ", ["1", "2"])
+        elif choice2 == "2":
+            print("\nประตูล็อคอยู่ มีคีย์แพดกะพริบสีแดง")
+            print("ต้องการรหัส 4 หลัก...")
 
-    if choice == "2":
-        print("\nYou crawl into a wall. Hard.")
-        print("You pass out again. (BAD ENDING ☠️)")
-        return False
+        elif choice2 == "3":
+            if not has_screwdriver:
+                print("\nคุณค้นโต๊ะอย่างละเอียด...")
+                print("เจอ ไขควง และกระดาษโน้ตที่เขียนว่า:")
+                print("'รหัสอยู่ในที่ที่ความรู้อาศัย'")
+                inventory.append("ไขควง")
+                inventory.append("โน้ต: รหัสอยู่ในที่ที่ความรู้อาศัย")
+                has_screwdriver = True
+            else:
+                print("\nค้นแล้ว ไม่มีอะไรเพิ่มอีกแล้ว")
 
-    print("\nYou pull out a LIGHTER from your pocket.")
-    inventory.append("LIGHTER")
-
-    show_status("Dark Room")
-    print("\nThe lighter reveals the room.")
-    print("You see: a VENT on the wall, a DOOR with a keypad, and a DESK.")
-
-    choice = ask("\n1: Inspect the vent\n2: Try the keypad\n3: Search the desk\nChoose: ", ["1", "2", "3"])
-
-    if choice == "1":
-        print("\nThe vent is screwed shut. You need a tool.")
-
-    elif choice == "2":
-        print("\nThe keypad blinks red. You need a code.")
-
-    if choice == "3" or choice in ["1", "2"]:
-        print("\nYou search the desk and find a SCREWDRIVER and a torn NOTE.")
-        print("The note reads: 'The code is where knowledge lives.'")
-        inventory.append("SCREWDRIVER")
-        inventory.append("NOTE: code is where knowledge lives")
-
-    show_status("Dark Room")
-    print("\nWhat do you do now?")
-    choice2 = ask("1: Use screwdriver on vent\n2: Try keypad again\nChoose: ", ["1", "2"])
-
-    if choice2 == "2":
-        print("\nYou don't have the code yet. The door stays locked. (BAD ENDING ☠️)")
-        return False
-
-    print("\nYou unscrew the vent and crawl through a dark tunnel...")
-    print("You emerge into a dimly lit room.")
-    return True
-
-# ==============================
-# ROOM 2: THE LAB
-# ==============================
-def room_lab():
-    show_status("The Lab")
-    print("\nThe room smells like chemicals.")
-    print("There are 3 tables: RED, BLUE, GREEN.")
-    print("On the wall: a locked CABINET and a strange MACHINE.")
-
-    choice = ask("\n1: Examine red table\n2: Examine blue table\n3: Examine green table\n4: Try the cabinet\nChoose: ", ["1", "2", "3", "4"])
-
-    found_clue = False
-
-    if choice == "1":
-        print("\nBroken glass. Nothing useful.")
-    elif choice == "2":
-        print("\nYou find a VIAL with a blue liquid. Could be useful.")
-        inventory.append("BLUE VIAL")
-        found_clue = True
-    elif choice == "3":
-        print("\nA notebook! It says: 'Mix blue + heat = unlock'")
-        inventory.append("LAB NOTEBOOK")
-        found_clue = True
-    elif choice == "4":
-        print("\nThe cabinet is sealed with a chemical lock.")
-
-    if not found_clue:
-        print("\nYou search more and eventually find the BLUE VIAL and LAB NOTEBOOK.")
-        if "BLUE VIAL" not in inventory:
-            inventory.append("BLUE VIAL")
-        if "LAB NOTEBOOK" not in inventory:
-            inventory.append("LAB NOTEBOOK")
-
-    show_status("The Lab")
-    print("\nThe machine has a slot for a vial and a heat button.")
-    choice2 = ask("\n1: Insert blue vial and press heat\n2: Leave the machine alone\nChoose: ", ["1", "2"])
-
-    if choice2 == "2":
-        print("\nYou ignore the machine and find no way forward. (BAD ENDING ☠️)")
-        return False
-
-    print("\nThe machine hisses. The cabinet UNLOCKS.")
-    print("Inside: a KEY CARD and a map of the building.")
-    inventory.append("KEY CARD")
-    inventory.append("BUILDING MAP")
-
-    show_status("The Lab")
-    print("\nThe map shows a LIBRARY next door.")
-    print("The key card can open it.")
-    return True
-
-# ==============================
-# ROOM 3: THE LIBRARY
-# ==============================
-def room_library():
-    show_status("The Library")
-    print("\nRows of dusty books surround you.")
-    print("'The code is where knowledge lives' — the note from Room 1.")
-    print("\nYou see shelves labeled: SCIENCE, HISTORY, MYSTERY")
-
-    choice = ask("\n1: Search SCIENCE shelf\n2: Search HISTORY shelf\n3: Search MYSTERY shelf\nChoose: ", ["1", "2", "3"])
-
-    if choice == "1":
-        print("\nScience books... nothing hidden.")
-    elif choice == "2":
-        print("\nHistory books... you find an old PHOTOGRAPH but no code.")
-        inventory.append("OLD PHOTOGRAPH")
-    elif choice == "3":
-        print("\nA mystery novel falls open. Inside: '4891'")
-        print("That must be the keypad code from Room 1!")
-        inventory.append("CODE: 4891")
-
-    if "CODE: 4891" not in inventory:
-        show_status("The Library")
-        print("\nYou keep searching...")
-        choice2 = ask("1: Search MYSTERY shelf\n2: Give up\nChoose: ", ["1", "2"])
-
-        if choice2 == "2":
-            print("\nYou sit down and cry. (BAD ENDING ☠️)")
-            return False
-
-        print("\nThe mystery novel falls open. Inside: '4891'")
-        inventory.append("CODE: 4891")
-
-    show_status("The Library")
-    print("\nYou now have the code. Time to go back.")
-    print("But wait — there's a LOCKED DRAWER under the main desk.")
-
-    choice3 = ask("\n1: Try to open the drawer\n2: Head straight to the exit\nChoose: ", ["1", "2"])
-
-    if choice3 == "1":
-        print("\nThe drawer is locked tight. You notice a keyhole shaped like a photograph...")
-        if "OLD PHOTOGRAPH" in inventory:
-            print("You slide the photograph in. *CLICK*")
-            print("Inside: a SECRET BADGE with your name on it.")
-            inventory.append("SECRET BADGE")
-            print("How does someone here know your name?! 😱")
         else:
-            print("You can't open it without the right key.")
-
-    return True
+            print("\nไม่มีตัวเลือกนั้น ลองใหม่นะ")
 
 # ==============================
-# ROOM 4: EXIT HALL
+# ห้องที่ 2: ห้องแล็บ
 # ==============================
-def room_exit():
-    show_status("Exit Hall")
-    print("\nA long corridor. At the end: THE EXIT DOOR.")
-    print("Next to it: the KEYPAD from Room 1 (same system).")
-    print("And a SECURITY CAMERA watching you.")
+def room2():
+    show_status("ห้องแล็บ")
+    print("\nกลิ่นสารเคมีฉุนแรง")
+    print("มีโต๊ะทดลอง 3 ตัว: แดง, น้ำเงิน, เขียว")
+    print("และตู้เหล็กล็อคอยู่ริมผนัง กับเครื่องจักรลึกลับ")
 
-    choice = ask("\n1: Enter code on keypad\n2: Smash the camera first\n3: Look for another way\nChoose: ", ["1", "2", "3"])
+    has_vial = False
+    has_notebook = False
+    cabinet_open = False
 
-    if choice == "2":
-        print("\nYou smash the camera. An alarm goes off.")
-        print("Guards arrive in 30 seconds. You panic. (BAD ENDING ☠️)")
-        return "bad"
+    while True:
+        show_status("ห้องแล็บ")
+        print("\nจะตรวจสอบอะไร?")
 
-    if choice == "3":
-        print("\nYou find a side window. It's small but you could fit.")
-        if "SECRET BADGE" in inventory:
-            print("Your secret badge has a chip — it unlocks the window latch!")
-            print("\nYou slip out through the window undetected.")
-            print("\n🏆 (TRUE ENDING — You escaped AND kept your identity secret!) 🏆")
-            return "true"
+        if not cabinet_open:
+            choice = input("1: ค้นโต๊ะแดง\n2: ค้นโต๊ะน้ำเงิน\n3: ค้นโต๊ะเขียว\n4: ดูเครื่องจักร\n5: ลองเปิดตู้เหล็ก\nเลือก: ")
         else:
-            print("The window is sealed. No way through.")
+            choice = input("1: ค้นโต๊ะแดง\n2: ค้นโต๊ะน้ำเงิน\n3: ค้นโต๊ะเขียว\n6: ไปห้องถัดไป\nเลือก: ")
 
-    if "CODE: 4891" not in inventory:
-        print("\nYou don't remember the code. You stand there forever. (BAD ENDING ☠️)")
-        return "bad"
+        if choice == "1":
+            print("\nแก้วแตกกระจาย อุปกรณ์ไหม้เกรียม")
+            print("ไม่มีอะไรที่ใช้ได้")
 
-    print("\nYou type: 4-8-9-1")
-    print("*BEEP BEEP* — GREEN LIGHT")
-    print("The door unlocks.")
+        elif choice == "2":
+            if not has_vial:
+                print("\nคุณเจอ หลอดทดลองน้ำยาสีน้ำเงิน !")
+                print("ภายในมีของเหลวเรืองแสงอ่อนๆ")
+                inventory.append("หลอดน้ำยาสีน้ำเงิน")
+                has_vial = True
+            else:
+                print("\nไม่มีอะไรเพิ่มแล้ว")
 
-    if "SECRET BADGE" in inventory:
-        print("\nAs you step out, you look at the badge.")
-        print("Someone set this whole thing up... and they know who you are.")
-        print("\n✨ (SECRET ENDING — You're free, but the mystery isn't over...) ✨")
-        return "secret"
-    else:
-        print("\nSunlight. Fresh air. Freedom.")
-        print("\n🎉 (GOOD ENDING — You escaped!) 🎉")
-        return "good"
+        elif choice == "3":
+            if not has_notebook:
+                print("\nคุณเจอ สมุดบันทึก !")
+                print("หน้าสุดท้ายเขียนว่า:")
+                print("'ผสมน้ำยาสีน้ำเงิน + ความร้อน = ปลดล็อค'")
+                inventory.append("สมุดบันทึก")
+                has_notebook = True
+            else:
+                print("\nอ่านแล้ว ไม่มีอะไรเพิ่ม")
+
+        elif choice == "4":
+            print("\nเครื่องจักรมีช่องใส่หลอดทดลอง และปุ่ม HEAT")
+            if has_vial and has_notebook:
+                print("\nคุณนึกถึงที่อ่านในสมุด: 'น้ำยาสีน้ำเงิน + ความร้อน'")
+                use_machine = input("ใส่หลอดน้ำยาแล้วกดปุ่ม HEAT? (ใช่/ไม่): ")
+                if use_machine == "ใช่":
+                    print("\nเครื่องจักรส่งเสียงดัง... ไอน้ำพุ่งออกมา!")
+                    print("ตู้เหล็กเปิดออกด้วยเสียง CLICK!")
+                    print("\nในตู้มี: คีย์การ์ด และแผนที่อาคาร")
+                    inventory.append("คีย์การ์ด")
+                    inventory.append("แผนที่อาคาร")
+                    cabinet_open = True
+                else:
+                    print("\nคุณยังไม่กล้าลอง")
+            elif not has_vial:
+                print("ต้องหาหลอดทดลองก่อน")
+            elif not has_notebook:
+                print("ต้องหาสมุดบันทึกก่อนเพื่อรู้วิธีใช้")
+
+        elif choice == "5":
+            print("\nตู้ล็อคด้วยระบบเคมี ต้องหาวิธีปลดล็อคก่อน")
+
+        elif choice == "6" and cabinet_open:
+            print("\nแผนที่บอกว่ามีห้องสมุดอยู่ถัดไป")
+            print("คุณรูดคีย์การ์ด... ประตูเปิดออก!")
+            input("[กด Enter เพื่อไปต่อ]")
+            room3()
+            return
+
+        else:
+            print("\nไม่มีตัวเลือกนั้น ลองใหม่นะ")
 
 # ==============================
-# MAIN GAME
+# ห้องที่ 3: ห้องสมุด
+# ==============================
+def room3():
+    show_status("ห้องสมุด")
+    print("\nชั้นหนังสือเต็มไปหมด ฝุ่นจับหนา")
+    print("คุณนึกถึงโน้ตในห้องแรก:")
+    print("'รหัสอยู่ในที่ที่ความรู้อาศัย'")
+    print("\nชั้นหนังสือมี 3 หมวด: วิทยาศาสตร์, ประวัติศาสตร์, นิยาย")
+
+    has_code = False
+    has_photo = False
+
+    while True:
+        show_status("ห้องสมุด")
+        print("\nจะค้นที่ไหน?")
+
+        if has_code:
+            choice = input("1: ค้นหมวดวิทยาศาสตร์\n2: ค้นหมวดประวัติศาสตร์\n3: ค้นหมวดนิยาย\n4: ดูลิ้นชักใต้โต๊ะ\n5: ไปห้องทางออก\nเลือก: ")
+        else:
+            choice = input("1: ค้นหมวดวิทยาศาสตร์\n2: ค้นหมวดประวัติศาสตร์\n3: ค้นหมวดนิยาย\n4: ดูลิ้นชักใต้โต๊ะ\nเลือก: ")
+
+        if choice == "1":
+            print("\nตำราวิทยาศาสตร์เต็มไปหมด...")
+            print("ไม่มีอะไรผิดปกติ")
+
+        elif choice == "2":
+            if not has_photo:
+                print("\nคุณพบ รูปถ่ายเก่า !")
+                print("ใบหน้าในรูปถูกขีดทับด้วยหมึกดำ")
+                print("ด้านหลังเขียนว่า 'อย่าไว้ใจใคร'")
+                inventory.append("รูปถ่ายเก่า")
+                has_photo = True
+            else:
+                print("\นดูแล้ว ไม่มีอะไรเพิ่ม")
+
+        elif choice == "3":
+            if not has_code:
+                print("\nหนังสือนิยายเล่มหนึ่งหล่นลงมา...")
+                print("ปกในมีตัวเลขเขียนด้วยหมึกแดง: 4891")
+                print("\nนั่นคือรหัสคีย์แพด!")
+                inventory.append("รหัส: 4891")
+                has_code = True
+            else:
+                print("\nดูแล้ว นั่นคือที่เจอรหัส 4891")
+
+        elif choice == "4":
+            print("\nลิ้นชักมีรูกุญแจรูปแปลก...")
+            if has_photo:
+                print("รูปกุญแจดูเหมือนรูปร่างของรูปถ่ายพอดี!")
+                use_photo = input("ลองใช้รูปถ่ายเปิด? (ใช่/ไม่): ")
+                if use_photo == "ใช่":
+                    print("\nรูปถ่ายพอดีกับรูกุญแจ... *CLICK*")
+                    print("ในลิ้นชักมี บัตรประจำตัว ที่มีชื่อและรูปของคุณ!")
+                    print("\n😱 ทำไมถึงมีบัตรของคุณอยู่ที่นี่?!")
+                    inventory.append("บัตรประจำตัวลึกลับ")
+            else:
+                print("รูกุญแจรูปร่างแปลก ต้องหาอะไรที่พอดีกับมัน")
+
+        elif choice == "5" and has_code:
+            print("\nคุณออกจากห้องสมุดมุ่งหน้าสู่ทางออก...")
+            input("[กด Enter เพื่อไปต่อ]")
+            room4()
+            return
+
+        else:
+            print("\nไม่มีตัวเลือกนั้น หรือยังไม่พร้อมไปต่อ")
+
+# ==============================
+# ห้องที่ 4: ทางออก
+# ==============================
+def room4():
+    show_status("ทางออก")
+    print("\nทางเดินยาว ปลายทางคือประตูเหล็กใหญ่")
+    print("มีคีย์แพด และกล้องวงจรปิดจับตาดูอยู่")
+
+    while True:
+        show_status("ทางออก")
+        print("\nจะทำอะไร?")
+        choice = input("1: กรอกรหัสที่คีย์แพด\n2: ทุบกล้องวงจรปิด\n3: หาทางออกอื่น\nเลือก: ")
+
+        if choice == "1":
+            if "รหัส: 4891" not in inventory:
+                print("\nคุณไม่รู้รหัส... กรอกผิดซ้ำแล้วซ้ำเล่า")
+                print("ระบบล็อคดาวน์!")
+                ending_bad()
+                return
+            else:
+                code = input("\nกรอกรหัส: ")
+                if code == "4891":
+                    if "บัตรประจำตัวลึกลับ" in inventory:
+                        ending_secret()
+                    else:
+                        ending_good()
+                    return
+                else:
+                    print("\nรหัสผิด! ลองใหม่")
+
+        elif choice == "2":
+            print("\nคุณทุบกล้องแตก... สัญญาณเตือนภัยดังลั่น!")
+            print("ได้ยินเสียงวิ่งมาจากปลายทางเดิน")
+            ending_bad()
+            return
+
+        elif choice == "3":
+            if "บัตรประจำตัวลึกลับ" in inventory:
+                print("\nคุณสังเกตเห็นหน้าต่างเล็กๆ ข้างประตู")
+                print("บัตรประจำตัวมีชิปอยู่ด้านใน!")
+                use_badge = input("ลองใช้บัตรแตะที่หน้าต่าง? (ใช่/ไม่): ")
+                if use_badge == "ใช่":
+                    ending_true()
+                    return
+                else:
+                    print("\nคุณยังไม่กล้าลอง")
+            else:
+                print("\nคุณหาทางอื่นไม่เจอ มีแค่ประตูหลักทางเดียว")
+
+        else:
+            print("\nไม่มีตัวเลือกนั้น ลองใหม่นะ")
+
+# ==============================
+# จบเกม - 4 แบบ
+# ==============================
+def ending_bad():
+    print("\n" + "=" * 35)
+    print("         ☠️  จบแบบที่ 1")
+    print("=" * 35)
+    print("คุณไม่สามารถหนีออกไปได้...")
+    print("มีคนพบคุณในอีก 3 วันต่อมา")
+    print("แต่สายเกินไปเสียแล้ว")
+    print("=" * 35)
+    play_again()
+
+def ending_good():
+    print("\n" + "=" * 35)
+    print("       🎉  จบแบบที่ 2: หนีได้!")
+    print("=" * 35)
+    print("ประตูเปิดออก แสงแดดส่องเข้ามา")
+    print("คุณวิ่งออกไปอย่างอิสระ")
+    print("แต่ยังไม่รู้ว่าใครขังคุณไว้...")
+    print("=" * 35)
+    play_again()
+
+def ending_secret():
+    print("\n" + "=" * 35)
+    print("    ✨  จบแบบที่ 3: ความลับ")
+    print("=" * 35)
+    print("คุณเดินออกมาท่ามกลางแสงแดด")
+    print("แต่มือคุณยังถือบัตรประจำตัวอยู่")
+    print("ชื่อคุณ รูปคุณ แต่คุณไม่เคยมาที่นี่")
+    print("มีคนรู้จักคุณ... และวางแผนทุกอย่างไว้แล้ว")
+    print("=" * 35)
+    play_again()
+
+def ending_true():
+    print("\n" + "=" * 35)
+    print("  🏆  จบแบบที่ 4: ความจริง!")
+    print("=" * 35)
+    print("หน้าต่างเปิดออกเงียบๆ")
+    print("คุณลอดออกไปโดยไม่มีใครรู้")
+    print("กล้องวงจรปิดไม่ได้บันทึกอะไรไว้")
+    print("\nคุณหนีได้... และคนที่ขังคุณ")
+    print("ยังคิดว่าคุณอยู่ในนั้น")
+    print("\nตอนนี้คุณมีเวลาหาความจริง")
+    print("=" * 35)
+    play_again()
+
+def play_again():
+    again = input("\nเล่นใหม่? (ใช่/ไม่): ")
+    if again == "ใช่":
+        inventory.clear()
+        main()
+
+# ==============================
+# เริ่มเกม
 # ==============================
 def main():
-    print("\n" + "=" * 40)
-    print("     🔍 LOCKED ROOM GAME v2.0")
-    print("      A Mystery Puzzle Adventure")
-    print("=" * 40)
-    print("\nSomeone locked you in. You don't know why.")
-    print("You need to think carefully to escape.")
-    print("\n[TIP: Collect items. Read clues. Use your brain.]")
-    input("\nPress Enter to begin...\n")
-
-    if not room_dark():
-        return
-    if not room_lab():
-        return
-    if not room_library():
-        return
-
-    ending = room_exit()
-
-    print("\n" + "=" * 40)
-    if ending == "true":
-        print("ENDINGS FOUND: TRUE ENDING 🏆 (Rarest!)")
-    elif ending == "secret":
-        print("ENDINGS FOUND: SECRET ENDING ✨ (Try again for TRUE ending!)")
-    elif ending == "good":
-        print("ENDINGS FOUND: GOOD ENDING 🎉 (2 more endings to find!)")
-    else:
-        print("ENDINGS FOUND: BAD ENDING ☠️ (Try again!)")
-    print("=" * 40)
+    print("\n" + "=" * 35)
+    print("      🔒 LOCKED ROOM")
+    print("   เกมสืบสวนหาทางออก")
+    print("=" * 35)
+    print("\nคุณตื่นขึ้นมาในที่ไม่รู้จัก")
+    print("ไม่รู้ว่าใครทำ ไม่รู้ว่าทำไม")
+    print("สิ่งเดียวที่รู้คือ... ต้องออกไป")
+    print("\n💡 เก็บของทุกอย่างที่เจอ")
+    print("💡 อ่านทุก clue ให้ดี")
+    print("💡 มี 4 จุดจบให้ค้นหา")
+    input("\n[กด Enter เพื่อเริ่ม]")
+    room1()
 
 main()
-print("\nThanks for playing! 🔒")
-input("Press Enter to exit...")
